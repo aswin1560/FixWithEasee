@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing Plans - FixWithEase{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+        <h1 style="font-size: 2.2rem; color: var(--dark); margin-bottom: 0.5rem;">Simple, Fair Pricing</h1>
+        <p style="color: var(--gray-600); font-size: 1.1rem;">Choose the right plan to unlock smart AI features and eliminate consulting fees.</p>
+        
+        {% if user_is_subscribed %}
+            <div style="margin-top: 1.25rem; display: inline-block; background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 0.6rem 1.25rem; border-radius: 50px; font-weight: 600;">
+                ⭐ You have an Active Subscription! (0% Fee & Full AI Access)
+            </div>
+        {% endif %}
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; max-width: 960px; margin: 0 auto 3rem;">
+        
+        <!-- Free Plan -->
+        <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 2.25rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column;">
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.35rem; color: var(--dark);">Free Plan</h3>
+                <div style="font-size: 2.2rem; font-weight: 800; margin: 0.5rem 0; color: var(--dark);">₹0</div>
+                <p style="color: var(--gray-600); font-size: 0.9rem;">Basic manual directory search</p>
+            </div>
+            
+            <ul style="list-style: none; margin-bottom: 2rem; flex: 1; display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.95rem;">
+                <li>✔️ Keyword search directory</li>
+                <li>✔️ Browse verified worker profiles</li>
+                <li>✔️ Contact workers directly</li>
+                <li style="color: var(--gray-400);">❌ AI-Powered Problem Matcher</li>
+                <li style="color: var(--gray-400);">❌ "Fix It Yourself" DIY tutorials</li>
+                <li style="color: var(--danger); font-weight: 600; background: #fef2f2; padding: 0.5rem; border-radius: 6px;">
+                    ⚠️ +5% consulting fee on every booking
+                </li>
+            </ul>
+
+            <a href="{{ url_for('workers') }}" class="btn btn-outline btn-block" style="padding: 0.75rem;">
+                Use Free Directory
+            </a>
+        </div>
+
+        <!-- Monthly Plan (Razorpay TEST Mode) -->
+        <div style="background: white; border: 2px solid var(--primary); border-radius: var(--radius); padding: 2.25rem; box-shadow: var(--shadow); position: relative; display: flex; flex-direction: column;">
+            <div style="position: absolute; top: -14px; right: 24px; background: var(--primary); color: white; padding: 0.25rem 0.85rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;">POPULAR</div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.35rem; color: var(--dark);">Monthly Plan</h3>
+                <div style="font-size: 2.2rem; font-weight: 800; margin: 0.5rem 0; color: var(--primary);">₹30 <span style="font-size: 1rem; font-weight: normal; color: var(--gray-600);">/ month</span></div>
+                <p style="color: var(--gray-600); font-size: 0.9rem;">Razorpay Test Mode</p>
+            </div>
+
+            <ul style="list-style: none; margin-bottom: 2rem; flex: 1; display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.95rem;">
+                <li>✔️ <strong>AI Problem Matcher:</strong> Natural language search</li>
+                <li>✔️ <strong>Fix It Yourself:</strong> Step-by-step DIY guides & video help</li>
+                <li>✔️ <strong>Safety Guardrail:</strong> Automatic block of hazardous tasks</li>
+                <li>✔️ <strong>Zero (0%) booking fee</strong> on all orders</li>
+                <li style="color: #065f46; font-weight: 600; background: #ecfdf5; padding: 0.5rem; border-radius: 6px;">
+                    🎉 Saves 5% on every booking!
+                </li>
+            </ul>
+
+            <button type="button" class="btn btn-primary btn-block" style="padding: 0.85rem;" onclick="initiateRazorpayPayment('monthly', 30)">
+                💳 Pay ₹30 with Razorpay
+            </button>
+        </div>
+
+        <!-- Yearly Plan (Razorpay TEST Mode) -->
+        <div style="background: white; border: 1px solid var(--secondary); border-radius: var(--radius); padding: 2.25rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column;">
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.35rem; color: var(--dark);">Yearly Plan</h3>
+                <div style="font-size: 2.2rem; font-weight: 800; margin: 0.5rem 0; color: var(--secondary);">₹300 <span style="font-size: 1rem; font-weight: normal; color: var(--gray-600);">/ year</span></div>
+                <p style="color: #059669; font-size: 0.9rem; font-weight: 700;">🎁 Save ₹60 / year (2 Months Free!)</p>
+            </div>
+
+            <ul style="list-style: none; margin-bottom: 2rem; flex: 1; display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.95rem;">
+                <li>✔️ Everything in the Monthly Plan</li>
+                <li>✔️ 365 days of uninterrupted AI access</li>
+                <li>✔️ Priority AI diagnosis & matching</li>
+                <li>✔️ <strong>Zero (0%) booking fee</strong> all year round</li>
+                <li style="color: #065f46; font-weight: 600; background: #ecfdf5; padding: 0.5rem; border-radius: 6px;">
+                    💰 Best Value: Pay ₹300 instead of ₹360
+                </li>
+            </ul>
+
+            <button type="button" class="btn btn-secondary btn-block" style="padding: 0.85rem;" onclick="initiateRazorpayPayment('yearly', 300)">
+                💳 Pay ₹300 with Razorpay
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Comparison Table -->
+    <div style="background: white; border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 2rem; margin-top: 2rem;">
+        <h3 style="margin-bottom: 1.5rem; text-align: center;">Plan Feature Comparison</h3>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--gray-200); text-align: left;">
+                        <th style="padding: 0.75rem;">Feature</th>
+                        <th style="padding: 0.75rem; text-align: center;">Free Tier</th>
+                        <th style="padding: 0.75rem; text-align: center; color: var(--primary);">Monthly (₹30)</th>
+                        <th style="padding: 0.75rem; text-align: center; color: var(--secondary);">Yearly (₹300)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--gray-200);">
+                        <td style="padding: 0.75rem;">Directory Search</td>
+                        <td style="padding: 0.75rem; text-align: center;">Keyword Only</td>
+                        <td style="padding: 0.75rem; text-align: center;">Keyword + AI</td>
+                        <td style="padding: 0.75rem; text-align: center;">Keyword + AI</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--gray-200);">
+                        <td style="padding: 0.75rem;">AI Problem Diagnosis</td>
+                        <td style="padding: 0.75rem; text-align: center; color: var(--gray-400);">—</td>
+                        <td style="padding: 0.75rem; text-align: center;">Included</td>
+                        <td style="padding: 0.75rem; text-align: center;">Included</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--gray-200);">
+                        <td style="padding: 0.75rem;">Fix It Yourself (Safe DIY Guides)</td>
+                        <td style="padding: 0.75rem; text-align: center; color: var(--gray-400);">—</td>
+                        <td style="padding: 0.75rem; text-align: center;">Included</td>
+                        <td style="padding: 0.75rem; text-align: center;">Included</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--gray-200);">
+                        <td style="padding: 0.75rem;">Safety Blocklist & Risk Analysis</td>
+                        <td style="padding: 0.75rem; text-align: center; color: var(--gray-400);">—</td>
+                        <td style="padding: 0.75rem; text-align: center;">Included</td>
+                        <td style="padding: 0.75rem; text-align: center;">Included</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.75rem;">Order Platform Fee</td>
+                        <td style="padding: 0.75rem; text-align: center; color: var(--danger); font-weight: 600;">+5% Fee</td>
+                        <td style="padding: 0.75rem; text-align: center; color: #059669; font-weight: 600;">0% (Free)</td>
+                        <td style="padding: 0.75rem; text-align: center; color: #059669; font-weight: 600;">0% (Free)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Razorpay Test Modal (For Test & Demo Mode) -->
+<div id="razorpayModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; max-width: 440px; width: 90%; padding: 2rem; box-shadow: var(--shadow-lg); position: relative;">
+        <button onclick="closeRazorpayModal()" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--gray-600);">&times;</button>
+        
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+            <div style="background: #2563eb; color: white; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800;">₹</div>
+            <div>
+                <h3 style="font-size: 1.2rem; color: var(--dark); margin: 0;">Razorpay Checkout</h3>
+                <span style="font-size: 0.8rem; color: #d97706; font-weight: 600;">⚡ TEST MODE</span>
+            </div>
+        </div>
+
+        <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+                <span>Plan:</span>
+                <strong id="modalPlanName">Monthly Plan</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+                <span>Order ID:</span>
+                <span id="modalOrderId" style="font-family: monospace;">order_test_...</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 700; color: var(--dark); border-top: 1px solid var(--gray-200); padding-top: 0.5rem; margin-top: 0.5rem;">
+                <span>Total Amount:</span>
+                <span id="modalAmount">₹30.00</span>
+            </div>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--gray-600); margin-bottom: 1.25rem; text-align: center;">
+            Simulate a Razorpay transaction outcome to test server signature validation:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <button type="button" class="btn btn-primary" onclick="simulatePaymentOutcome(true)" style="padding: 0.75rem;">
+                ✔️ Simulate Successful Payment
+            </button>
+            <button type="button" class="btn btn-outline" onclick="simulatePaymentOutcome(false)" style="padding: 0.75rem; border-color: var(--danger); color: var(--danger);">
+                ❌ Simulate Failed Payment (Error Test)
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+let activeOrderData = null;
+
+async function initiateRazorpayPayment(plan, rupees) {
+    try {
+        const response = await fetch("{{ url_for('create_razorpay_order_api') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ plan: plan })
+        });
+
+        if (response.status === 401 || response.redirected) {
+            window.location.href = "{{ url_for('login', next=url_for('pricing')) }}";
+            return;
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+            alert(data.message || "Failed to create payment order.");
+            return;
+        }
+
+        activeOrderData = data;
+
+        // If real Razorpay key exists, try standard checkout modal
+        if (data.key_id && !data.key_id.includes("placeholder") && window.Razorpay) {
+            const options = {
+                key: data.key_id,
+                amount: data.amount,
+                currency: data.currency,
+                name: "FixWithEase",
+                description: data.plan_name,
+                order_id: data.order_id,
+                handler: function (response) {
+                    verifyPaymentOnServer(response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature, data.plan);
+                },
+                theme: { color: "#2563eb" }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } else {
+            // Open interactive Test Mode Simulator
+            document.getElementById('modalPlanName').innerText = data.plan_name;
+            document.getElementById('modalOrderId').innerText = data.order_id;
+            document.getElementById('modalAmount').innerText = "₹" + rupees.toFixed(2);
+            document.getElementById('razorpayModal').style.display = 'flex';
+        }
+    } catch (err) {
+        alert("Payment initialization error: " + err.message);
+    }
+}
+
+function closeRazorpayModal() {
+    document.getElementById('razorpayModal').style.display = 'none';
+}
+
+async function simulatePaymentOutcome(isSuccess) {
+    if (!activeOrderData) return;
+    const plan = activeOrderData.plan;
+    const orderId = activeOrderData.order_id;
+
+    if (!isSuccess) {
+        // Send invalid signature to test rejection
+        verifyPaymentOnServer(orderId, "pay_failed_sample", "invalid_tampered_signature", plan);
+    } else {
+        // Request simulated signature from server
+        const res = await fetch("{{ url_for('simulate_payment_signature') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ order_id: orderId, plan: plan })
+        });
+        const signData = await res.json();
+        verifyPaymentOnServer(signData.order_id, signData.payment_id, signData.signature, plan);
+    }
+}
+
+async function verifyPaymentOnServer(orderId, paymentId, signature, plan) {
+    closeRazorpayModal();
+    try {
+        const res = await fetch("{{ url_for('verify_payment_api') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                razorpay_order_id: orderId,
+                razorpay_payment_id: paymentId,
+                razorpay_signature: signature,
+                plan: plan
+            })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            alert("🎉 " + result.message);
+            window.location.reload();
+        } else {
+            alert("❌ Payment Failed: " + (result.message || "Signature verification failed."));
+        }
+    } catch (err) {
+        alert("Payment verification error: " + err.message);
+    }
+}
+</script>
+{% endblock %}

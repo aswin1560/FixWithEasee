@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Register - FixWithEase{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 540px; margin: 2rem auto;">
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 2.5rem; box-shadow: var(--shadow);">
+        <h2 style="margin-bottom: 0.5rem; text-align: center; color: var(--dark);">Create an Account</h2>
+        <p style="color: var(--gray-600); text-align: center; margin-bottom: 2rem; font-size: 0.95rem;">Join as a customer or skilled local service provider.</p>
+
+        <form action="{{ url_for('register') }}" method="POST">
+            <!-- Role Selection -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem;">I want to register as:</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 1px solid var(--gray-400); border-radius: 6px; cursor: pointer;">
+                        <input type="radio" name="role" value="customer" checked onchange="toggleWorkerFields()">
+                        <strong>Customer</strong>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border: 1px solid var(--gray-400); border-radius: 6px; cursor: pointer;">
+                        <input type="radio" name="role" value="worker" onchange="toggleWorkerFields()">
+                        <strong>Skilled Worker</strong>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Common Fields -->
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem;">Full Name</label>
+                <input type="text" name="name" required placeholder="e.g. Ramesh Kumar" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 1rem;">
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem;">Email Address</label>
+                <input type="email" name="email" required placeholder="name@example.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 1rem;">
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem;">Password</label>
+                <input type="password" name="password" required placeholder="At least 6 characters" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 1rem;">
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem;">City / Neighborhood</label>
+                <input type="text" name="city" required placeholder="e.g. Adyar, Chennai" value="Chennai" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 1rem;">
+            </div>
+
+            <!-- Hidden Lat / Lng populated by Geolocation -->
+            <input type="hidden" name="lat" id="latInput" value="13.0827">
+            <input type="hidden" name="lng" id="lngInput" value="80.2707">
+
+            <!-- Worker Specific Fields -->
+            <div id="workerFields" style="display: none; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                <h4 style="margin-bottom: 0.75rem; color: var(--primary);">Worker Profile Details</h4>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.85rem;">Skills (comma-separated)</label>
+                    <input type="text" name="skills" placeholder="e.g. Plumber, Pipe Repair, Tap Fixing" style="width: 100%; padding: 0.65rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 0.95rem;">
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.85rem;">Years of Experience</label>
+                    <input type="number" name="experience_years" min="0" max="50" value="3" style="width: 100%; padding: 0.65rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 0.95rem;">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="padding: 0.85rem; font-size: 1rem;">Create Account</button>
+        </form>
+
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--gray-600);">
+            Already have an account? <a href="{{ url_for('login') }}" style="color: var(--primary); font-weight: 600;">Log in here</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleWorkerFields() {
+    const isWorker = document.querySelector('input[name="role"]:checked').value === 'worker';
+    document.getElementById('workerFields').style.display = isWorker ? 'block' : 'none';
+}
+
+// Optional geolocation capture
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition((pos) => {
+        document.getElementById('latInput').value = pos.coords.latitude;
+        document.getElementById('lngInput').value = pos.coords.longitude;
+    }, () => {});
+}
+</script>
+{% endblock %}

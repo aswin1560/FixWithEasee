@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order.id }} - FixWithEase{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 680px; margin: 2rem auto;">
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 2.5rem; box-shadow: var(--shadow);">
+        
+        <!-- Status Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--gray-200);">
+            <div>
+                <span style="font-size: 0.85rem; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.5px;">Order ID</span>
+                <h2 style="font-size: 1.5rem; color: var(--dark);">#{{ order.id }}</h2>
+            </div>
+            
+            <div>
+                {% if order.status == 'pending' %}
+                    <span style="background: #fef3c7; color: #92400e; padding: 0.35rem 0.85rem; border-radius: 999px; font-weight: 700; font-size: 0.85rem;">
+                        🟡 Booking Pending
+                    </span>
+                {% elif order.status == 'completed' %}
+                    <span style="background: #ecfdf5; color: #065f46; padding: 0.35rem 0.85rem; border-radius: 999px; font-weight: 700; font-size: 0.85rem;">
+                        🟢 Completed
+                    </span>
+                {% else %}
+                    <span style="background: #eff6ff; color: #1e40af; padding: 0.35rem 0.85rem; border-radius: 999px; font-weight: 700; font-size: 0.85rem;">
+                        {{ order.status|capitalize }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Worker & Problem Info -->
+        <div style="margin-bottom: 1.75rem;">
+            <h4 style="font-size: 1rem; color: var(--gray-800); margin-bottom: 0.5rem;">Worker Details</h4>
+            <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 1rem;">
+                <p><strong>Name:</strong> {{ order.worker_name }}</p>
+                <p><strong>Skill:</strong> {{ order.worker_skills }}</p>
+                <p><strong>Email:</strong> {{ order.worker_email }}</p>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.75rem;">
+            <h4 style="font-size: 1rem; color: var(--gray-800); margin-bottom: 0.5rem;">Problem Description</h4>
+            <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 1rem; color: var(--gray-800); font-style: italic;">
+                "{{ order.problem_text }}"
+            </div>
+        </div>
+
+        <!-- Billing Summary -->
+        <div style="background: var(--white); border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.25rem; margin-bottom: 2rem;">
+            <h4 style="font-size: 1rem; color: var(--gray-800); margin-bottom: 0.75rem;">Payment Breakdown</h4>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem; font-size: 0.95rem;">
+                <span>Base Service Amount:</span>
+                <span>₹{{ "%.2f"|format(order.base_amount) }}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem; font-size: 0.95rem;">
+                <span>Consulting Fee:</span>
+                <span>
+                    {% if order.fee_amount > 0 %}
+                        <span style="color: var(--danger); font-weight: 600;">+₹{{ "%.2f"|format(order.fee_amount) }} (5% Platform Fee)</span>
+                    {% else %}
+                        <span style="color: #065f46; font-weight: 600;">₹0.00 (Waived for Subscriber)</span>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--gray-200); font-size: 1.15rem; font-weight: 700; color: var(--dark);">
+                <span>Total Amount:</span>
+                <span>₹{{ "%.2f"|format(order.base_amount + order.fee_amount) }}</span>
+            </div>
+        </div>
+
+        <!-- Order Lifecycle: Completion & Reviewing -->
+        {% if order.status != 'completed' %}
+            <div style="background: #f8fafc; border: 1px dashed var(--gray-400); border-radius: 8px; padding: 1.25rem; margin-bottom: 2rem; text-align: center;">
+                <p style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: 0.75rem;">
+                    Once the skilled worker arrives and finishes the work, mark the order as completed to rate their service.
+                </p>
+                <form action="{{ url_for('complete_order', order_id=order.id) }}" method="POST">
+                    <button type="submit" class="btn btn-secondary" style="padding: 0.6rem 1.5rem; font-size: 0.95rem;">
+                        ✔️ Mark Order as Completed
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <!-- Review Section (Phase 8 Requirement 1) -->
+            <div style="background: #f8fafc; border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                {% if review %}
+                    <h4 style="color: var(--dark); margin-bottom: 0.75rem;">Your Review for {{ order.worker_name }}</h4>
+                    <div style="background: white; border: 1px solid var(--gray-200); border-radius: 6px; padding: 1rem;">
+                        <div style="color: #d97706; font-size: 1.25rem; margin-bottom: 0.35rem;">
+                            {% for _ in range(review.rating) %}⭐{% endfor %}
+                            <span style="font-size: 0.9rem; color: var(--gray-600); font-weight: 600;">({{ review.rating }}/5)</span>
+                        </div>
+                        {% if review.comment %}
+                            <p style="color: var(--gray-800); font-size: 0.95rem; margin: 0;">"{{ review.comment }}"</p>
+                        {% endif %}
+                        <span style="display: block; font-size: 0.75rem; color: var(--gray-400); margin-top: 0.5rem;">Submitted on {{ review.created_at[:10] }}</span>
+                    </div>
+                {% else %}
+                    <h4 style="color: var(--dark); margin-bottom: 0.5rem;">Leave a Review & Rating</h4>
+                    <p style="font-size: 0.85rem; color: var(--gray-600); margin-bottom: 1.25rem;">
+                        Help other customers by rating your experience with {{ order.worker_name }}. This updates their public rating.
+                    </p>
+
+                    <form action="{{ url_for('submit_review', order_id=order.id) }}" method="POST">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.35rem;">Rating *</label>
+                            <select name="rating" required style="padding: 0.65rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 1rem; width: 100%; max-width: 250px;">
+                                <option value="5">⭐⭐⭐⭐⭐ 5 Stars (Excellent)</option>
+                                <option value="4">⭐⭐⭐⭐ 4 Stars (Good)</option>
+                                <option value="3">⭐⭐⭐ 3 Stars (Average)</option>
+                                <option value="2">⭐⭐ 2 Stars (Poor)</option>
+                                <option value="1">⭐ 1 Star (Very Bad)</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 1.25rem;">
+                            <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.35rem;">Comment (Optional)</label>
+                            <textarea name="comment" rows="3" placeholder="How was their punctuality, workmanship, and pricing?" style="width: 100%; padding: 0.65rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 0.95rem; font-family: inherit;"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.5rem;">
+                            Submit Review
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 1rem;">
+            <a href="{{ url_for('workers') }}" class="btn btn-primary" style="flex: 1; text-align: center;">
+                Browse More Workers
+            </a>
+            <a href="{{ url_for('my_orders') }}" class="btn btn-outline" style="flex: 1; text-align: center;">
+                My Orders
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

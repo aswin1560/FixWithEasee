@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Book {{ worker.name }} - FixWithEase{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 650px; margin: 2rem auto;">
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 2.5rem; box-shadow: var(--shadow);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--gray-200);">
+            <div>
+                <h2 style="font-size: 1.6rem; color: var(--dark); margin-bottom: 0.25rem;">Book Service Request</h2>
+                <p style="color: var(--gray-600); font-size: 0.95rem;">Worker: <strong>{{ worker.name }}</strong> ({{ worker.skills }})</p>
+            </div>
+            <div style="background: #fef3c7; color: #92400e; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 700; font-size: 0.95rem;">
+                ⭐ {{ "%.1f"|format(worker.rating_avg) }}
+            </div>
+        </div>
+
+        <form action="{{ url_for('book_worker', worker_id=worker.user_id) }}" method="POST" id="bookingForm">
+            <!-- Problem Description -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; color: var(--gray-800);">
+                    Problem Description *
+                </label>
+                <textarea 
+                    name="problem_text" 
+                    rows="4" 
+                    required 
+                    placeholder="Describe what needs fixing (e.g. kitchen sink pipe is leaking from under the counter)..."
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 0.95rem; font-family: inherit;"
+                ></textarea>
+            </div>
+
+            <!-- Base Service Amount -->
+            <div style="margin-bottom: 1.75rem;">
+                <label style="display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.4rem; color: var(--gray-800);">
+                    Estimated Base Service Amount (₹)
+                </label>
+                <input 
+                    type="number" 
+                    name="base_amount" 
+                    id="baseAmountInput" 
+                    min="100" 
+                    step="50" 
+                    value="350" 
+                    required 
+                    oninput="calculateFee()"
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 1rem;"
+                >
+                <span style="font-size: 0.8rem; color: var(--gray-600);">Standard home visit & diagnosis estimate</span>
+            </div>
+
+            <!-- Price & Fee Breakdown Card -->
+            <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.25rem; margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 0.75rem; color: var(--dark); font-size: 1rem;">Order Price Summary</h4>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem;">
+                    <span>Base Amount:</span>
+                    <span id="displayBase">₹350.00</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem;">
+                    <span>
+                        Platform Consulting Fee:
+                        {% if user_is_subscribed %}
+                            <strong style="color: #065f46;">(0% Subscriber Perk)</strong>
+                        {% else %}
+                            <strong style="color: var(--danger);">(+5% Free Tier Fee)</strong>
+                        {% endif %}
+                    </span>
+                    <span id="displayFee">
+                        {% if user_is_subscribed %}
+                            ₹0.00
+                        {% else %}
+                            ₹17.50
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--gray-200); font-size: 1.1rem; font-weight: 700; color: var(--dark);">
+                    <span>Total Amount Payable:</span>
+                    <span id="displayTotal">
+                        {% if user_is_subscribed %}
+                            ₹350.00
+                        {% else %}
+                            ₹367.50
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- Incentive notice -->
+                {% if user_is_subscribed %}
+                    <div style="margin-top: 0.85rem; padding: 0.5rem 0.75rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; font-size: 0.85rem; color: #065f46;">
+                        ⭐ <strong>Subscriber Benefit:</strong> You saved 5% consulting fee on this booking!
+                    </div>
+                {% else %}
+                    <div style="margin-top: 0.85rem; padding: 0.5rem 0.75rem; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; font-size: 0.85rem; color: #92400e;">
+                        💡 <strong>Save Money:</strong> <a href="{{ url_for('pricing') }}" style="color: var(--primary); font-weight: 600;">Subscribe for ₹30/month</a> to waive the 5% consulting fee and unlock AI Search!
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 2; padding: 0.85rem; font-size: 1rem;">
+                    Confirm & Start Order
+                </button>
+                <a href="{{ url_for('workers') }}" class="btn btn-outline" style="flex: 1; padding: 0.85rem; text-align: center;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+const isSubscribed = {{ 'true' if user_is_subscribed else 'false' }};
+
+function calculateFee() {
+    const baseInput = document.getElementById('baseAmountInput');
+    const base = parseFloat(baseInput.value) || 0;
+    const feeRate = isSubscribed ? 0.0 : 0.05;
+    const fee = base * feeRate;
+    const total = base + fee;
+
+    document.getElementById('displayBase').innerText = '₹' + base.toFixed(2);
+    document.getElementById('displayFee').innerText = '₹' + fee.toFixed(2);
+    document.getElementById('displayTotal').innerText = '₹' + total.toFixed(2);
+}
+</script>
+{% endblock %}

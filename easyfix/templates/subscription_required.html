@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Subscribe to Unlock - FixWithEase{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 3rem auto; text-align: center;">
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 3rem 2rem; box-shadow: var(--shadow);">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">🔒</div>
+        <h2 style="color: var(--dark); margin-bottom: 0.75rem;">Subscribe to Unlock AI Features</h2>
+        <p style="color: var(--gray-600); margin-bottom: 2rem; font-size: 1.05rem;">
+            This premium feature requires an active subscription. Enjoy AI-Powered Search, Fix It Yourself DIY tutorials, and <strong>zero booking fees</strong> on every request!
+        </p>
+
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius); padding: 1.25rem; margin-bottom: 2rem; text-align: left;">
+            <h4 style="color: #1e40af; margin-bottom: 0.5rem;">Subscription Benefits:</h4>
+            <ul style="color: #1e3a8a; font-size: 0.95rem; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                <li>🤖 <strong>AI Problem Matcher:</strong> Describe problems naturally to get ranked workers.</li>
+                <li>🛠️ <strong>Fix It Yourself:</strong> Step-by-step guides for minor DIY home repairs.</li>
+                <li>💸 <strong>Zero Consulting Fee:</strong> Save the 5% platform fee charged to free users.</li>
+            </ul>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('pricing') }}" class="btn btn-primary" style="font-size: 1rem; padding: 0.8rem 1.75rem;">
+                View Plans (Starting at ₹30/month)
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline" style="font-size: 1rem; padding: 0.8rem 1.5rem;">
+                Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Find Skilled Workers - FixWithEase{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2rem; color: var(--dark); margin-bottom: 0.35rem;">Find Local Skilled Workers</h1>
+        <p style="color: var(--gray-600);">Browse verified local plumbers, electricians, carpenters, painters and technicians near you.</p>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+        <form action="{{ url_for('workers') }}" method="GET" id="searchFilterForm">
+            <!-- Hidden inputs for coordinates -->
+            <input type="hidden" name="lat" id="filterLat" value="{{ user_lat or '' }}">
+            <input type="hidden" name="lng" id="filterLng" value="{{ user_lng or '' }}">
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+                <!-- Keyword input -->
+                <div>
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.35rem; color: var(--gray-800);">Search Keyword</label>
+                    <input 
+                        type="text" 
+                        name="q" 
+                        placeholder="e.g. tap, pipe, wiring, door..." 
+                        value="{{ query or '' }}"
+                        style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 0.95rem;"
+                    >
+                </div>
+
+                <!-- Skill Filter -->
+                <div>
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.35rem; color: var(--gray-800);">Skill Category</label>
+                    <select name="skill" style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 0.95rem; background: white;">
+                        <option value="">All Skills</option>
+                        <option value="Plumber" {% if selected_skill == 'Plumber' %}selected{% endif %}>Plumber</option>
+                        <option value="Electrician" {% if selected_skill == 'Electrician' %}selected{% endif %}>Electrician</option>
+                        <option value="Carpenter" {% if selected_skill == 'Carpenter' %}selected{% endif %}>Carpenter</option>
+                        <option value="Painter" {% if selected_skill == 'Painter' %}selected{% endif %}>Painter</option>
+                        <option value="AC Repair" {% if selected_skill == 'AC Repair' %}selected{% endif %}>AC Repair</option>
+                        <option value="Appliance Repair" {% if selected_skill == 'Appliance Repair' %}selected{% endif %}>Appliance Repair</option>
+                    </select>
+                </div>
+
+                <!-- City / Area Filter -->
+                <div>
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.35rem; color: var(--gray-800);">Area / Neighborhood</label>
+                    <input 
+                        type="text" 
+                        name="city" 
+                        placeholder="e.g. Adyar, T. Nagar, Anna Nagar" 
+                        value="{{ selected_city or '' }}"
+                        style="width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 0.95rem;"
+                    >
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 0.65rem 1rem;">Filter</button>
+                    <a href="{{ url_for('workers') }}" class="btn btn-outline" style="padding: 0.65rem 0.85rem;" title="Reset filters">Reset</a>
+                </div>
+            </div>
+
+            <!-- Extra row for availability toggle and location detection -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-100); font-size: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--gray-800);">
+                    <input type="checkbox" name="available" value="1" {% if available_only %}checked{% endif %} onchange="document.getElementById('searchFilterForm').submit()">
+                    <span>Show Available Workers Only</span>
+                </label>
+
+                <button type="button" onclick="detectUserLocation()" style="background: none; border: none; color: var(--primary); cursor: pointer; display: flex; align-items: center; gap: 0.35rem; font-weight: 600; font-size: 0.85rem;">
+                    📍 <span id="locStatus">Use My Location for Accurate Distance</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Active Filter Chips / Results Count -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <p style="color: var(--gray-600); font-size: 0.95rem;">
+            Showing <strong>{{ workers|length }}</strong> worker{{ 's' if workers|length != 1 else '' }} found
+            {% if query %} for "<em>{{ query }}</em>"{% endif %}
+            {% if selected_skill %} in <strong>{{ selected_skill }}</strong>{% endif %}
+            {% if selected_city %} in <strong>{{ selected_city }}</strong>{% endif %}
+        </p>
+    </div>
+
+    <!-- Workers Grid -->
+    {% if workers and workers|length > 0 %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+            {% for worker in workers %}
+                <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: space-between; transition: var(--transition);">
+                    <div>
+                        <!-- Header with Name, Rating, Verification -->
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                            <div>
+                                <h3 style="font-size: 1.2rem; color: var(--dark); margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.4rem;">
+                                    {{ worker.name }}
+                                    {% if worker.verified %}
+                                        <span title="Verified Professional" style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #3b82f6; color: white; font-size: 11px;">✓</span>
+                                    {% endif %}
+                                </h3>
+                                <div style="font-size: 0.85rem; color: var(--gray-600);">
+                                    📍 {{ worker.city }}
+                                    {% if worker.distance_km is not none %}
+                                        <span style="color: var(--primary); font-weight: 600;">({{ worker.distance_km }} km away)</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Rating Badge -->
+                            <div style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.6rem; border-radius: 6px; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.25rem;">
+                                ⭐ {{ "%.1f"|format(worker.rating_avg) }}
+                            </div>
+                        </div>
+
+                        <!-- Skills List -->
+                        <div style="margin: 0.85rem 0;">
+                            <div style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.35rem; font-weight: 600;">SKILLS & SERVICES:</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                                {% for s in worker.skills.split(',') %}
+                                    <span style="background: var(--gray-100); color: var(--gray-800); font-size: 0.8rem; padding: 0.2rem 0.55rem; border-radius: 4px;">
+                                        {{ s.strip() }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Experience and Status -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--gray-100);">
+                            <span style="color: var(--gray-600);">⏳ {{ worker.experience_years }} yrs experience</span>
+                            
+                            {% if worker.is_available %}
+                                <span style="color: #065f46; background: #ecfdf5; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.78rem;">
+                                    🟢 Available
+                                </span>
+                            {% else %}
+                                <span style="color: #991b1b; background: #fef2f2; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.78rem;">
+                                    🔴 Busy
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Book Button -->
+                    <div style="margin-top: 1.25rem;">
+                        <a href="{{ url_for('book_worker', worker_id=worker.user_id) }}" class="btn btn-primary btn-block" style="padding: 0.65rem;">
+                            Book Now
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State (No Results Found) -->
+        <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 3.5rem 2rem; text-align: center; margin: 2rem 0;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+            <h3 style="color: var(--dark); margin-bottom: 0.5rem;">No workers found</h3>
+            <p style="color: var(--gray-600); max-width: 450px; margin: 0 auto 1.5rem; font-size: 0.95rem;">
+                We couldn't find any skilled workers matching your search criteria. Try using different keywords, clearing skill filters, or expanding your area.
+            </p>
+            <a href="{{ url_for('workers') }}" class="btn btn-primary">
+                View All Workers
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+
+<script>
+function detectUserLocation() {
+    const statusText = document.getElementById('locStatus');
+    if (!navigator.geolocation) {
+        statusText.innerText = "Geolocation not supported by browser";
+        return;
+    }
+    statusText.innerText = "Locating...";
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            document.getElementById('filterLat').value = position.coords.latitude;
+            document.getElementById('filterLng').value = position.coords.longitude;
+            statusText.innerText = "Location detected! Reloading...";
+            document.getElementById('searchFilterForm').submit();
+        },
+        (error) => {
+            statusText.innerText = "Location permission denied";
+        }
+    );
+}
+</script>
+{% endblock %}

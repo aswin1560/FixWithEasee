@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Fix It Yourself - AI DIY Assistant - FixWithEase{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 850px; margin: 1rem auto 3rem;">
+    
+    <!-- Header -->
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: #ecfdf5; color: #065f46; padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem;">
+            <span>🛠️ FIX IT YOURSELF</span>
+            <span style="background: #10b981; color: white; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.7rem;">PRO TUTOR</span>
+        </div>
+        <h1 style="font-size: 2.2rem; color: var(--dark); margin-bottom: 0.5rem;">Learn Minor Repairs with Step-by-Step AI Guidance</h1>
+        <p style="color: var(--gray-600); max-width: 600px; margin: 0 auto; font-size: 1.05rem;">
+            Fix simple household issues safely. Our system automatically checks for hazards — risky jobs (electrical, gas, water heaters) are safely blocked.
+        </p>
+    </div>
+
+    <!-- DIY Problem Input Form -->
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); margin-bottom: 2.5rem;">
+        <form action="{{ url_for('fix') }}" method="GET" id="diyForm">
+            <label style="display: block; font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; color: var(--dark);">
+                What would you like to fix?
+            </label>
+            <input 
+                type="text" 
+                name="q" 
+                id="diyQueryInput"
+                value="{{ query or '' }}"
+                placeholder="e.g. leaking tap, loose door hinge, clogged sink..." 
+                required
+                style="width: 100%; padding: 0.85rem 1rem; border: 2px solid var(--primary); border-radius: 8px; font-size: 1.05rem; margin-bottom: 1rem; outline: none;"
+            >
+
+            <!-- Quick Example Chips -->
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                <span style="color: var(--gray-600); font-weight: 600;">Safe to Try:</span>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;" onclick="setDiyQuery('leaking tap')">
+                    💧 leaking tap
+                </button>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;" onclick="setDiyQuery('loose door hinge')">
+                    🚪 loose door hinge
+                </button>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;" onclick="setDiyQuery('clogged sink')">
+                    🚰 clogged sink
+                </button>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                <span style="color: var(--danger); font-weight: 600;">Hazardous (Will be Refused):</span>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.25rem 0.6rem; border-color: var(--danger); color: var(--danger);" onclick="setDiyQuery('socket sparking')">
+                    ⚡ socket sparking
+                </button>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.25rem 0.6rem; border-color: var(--danger); color: var(--danger);" onclick="setDiyQuery('gas smell')">
+                    🔥 gas smell
+                </button>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.25rem 0.6rem; border-color: var(--danger); color: var(--danger);" onclick="setDiyQuery('geyser not heating')">
+                    🚿 geyser not heating
+                </button>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="diySubmitBtn" style="padding: 0.85rem 2rem; font-size: 1rem;">
+                🛠️ Get Step-by-Step Tutorial
+            </button>
+
+            <!-- DIY Loading State Indicator -->
+            <div id="diyLoadingBox" class="loading-box">
+                <span class="spinner spinner-blue"></span>
+                <span style="margin-left: 0.75rem; font-weight: 600; color: var(--primary);">Running safety checks & generating step-by-step tutorial...</span>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Section -->
+    {% if query and tutorial %}
+        {% if tutorial.is_risky %}
+            <!-- ================================================================= -->
+            <!-- RISKY PROBLEM VIEW: NO STEPS GENERATED -> REDIRECT TO PROFESSIONAL -->
+            <!-- ================================================================= -->
+            <div style="background: #fff5f5; border: 2px solid #feb2b2; border-radius: var(--radius); padding: 2.5rem; text-align: center; margin-bottom: 2.5rem; box-shadow: var(--shadow);">
+                <div style="font-size: 3.5rem; margin-bottom: 1rem;">🚫 ⚡</div>
+                
+                <h2 style="color: #9b2c2c; font-size: 1.8rem; margin-bottom: 0.5rem;">
+                    Please Consult a Professional
+                </h2>
+                <div style="display: inline-block; background: #fed7d7; color: #742a2a; padding: 0.25rem 0.85rem; border-radius: 999px; font-weight: 700; font-size: 0.85rem; margin-bottom: 1.25rem;">
+                    {{ tutorial.category or "Hazardous Category" }}
+                </div>
+
+                <div style="max-width: 650px; margin: 0 auto 1.75rem; color: #742a2a; font-size: 1.05rem; line-height: 1.6;">
+                    <p style="margin-bottom: 0.75rem;">
+                        <strong>Safety Warning:</strong> {{ tutorial.warning }}
+                    </p>
+                    <p style="font-size: 0.95rem; color: #9b2c2c;">
+                        In accordance with our strict safety protocols, <em>Fix It Yourself</em> never generates DIY steps for high-voltage electricity, gas lines, pressurized water heaters, or structural alterations.
+                    </p>
+                </div>
+
+                <!-- Call to action: AI Matcher button to find matching workers -->
+                <div style="background: white; border: 1px solid #feb2b2; border-radius: 8px; padding: 1.5rem; max-width: 500px; margin: 0 auto;">
+                    <p style="font-weight: 600; color: var(--dark); margin-bottom: 1rem;">
+                        Connect with verified, licensed technicians right now:
+                    </p>
+                    <a href="{{ url_for('ai_search', q=query) }}" class="btn btn-primary btn-block" style="padding: 0.85rem; font-size: 1.05rem; background-color: #c53030; border-color: #c53030;">
+                        🔍 Find Verified Professionals for "{{ query }}" &rarr;
+                    </a>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- ================================================================= -->
+            <!-- SAFE PROBLEM VIEW: NUMBERED STEPS + TOOLS + WARNING + VIDEOS     -->
+            <!-- ================================================================= -->
+            <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 2.5rem; box-shadow: var(--shadow); margin-bottom: 2rem;">
+                
+                <!-- Tutorial Header -->
+                <div style="border-bottom: 1px solid var(--gray-200); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="background: #ecfdf5; color: #065f46; font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px;">
+                            ✓ Safe for DIY
+                        </span>
+                        <span style="background: #eff6ff; color: #1e40af; font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px;">
+                            ⏱️ {{ tutorial.time_needed or "15-20 mins" }}
+                        </span>
+                        <span style="background: #f1f5f9; color: var(--gray-800); font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px;">
+                            Difficulty: {{ tutorial.difficulty or "Easy" }}
+                        </span>
+                    </div>
+
+                    <h2 style="font-size: 1.8rem; color: var(--dark);">{{ tutorial.title }}</h2>
+                </div>
+
+                <!-- Tools & Materials Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.25rem;">
+                        <h4 style="color: var(--dark); margin-bottom: 0.75rem; font-size: 0.95rem;">🔧 Tools Needed:</h4>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.9rem;">
+                            {% for tool in tutorial.tools_needed %}
+                                <li>✔️ {{ tool }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div style="background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 1.25rem;">
+                        <h4 style="color: var(--dark); margin-bottom: 0.75rem; font-size: 0.95rem;">📦 Materials Needed:</h4>
+                        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.9rem;">
+                            {% for mat in tutorial.materials_needed %}
+                                <li>✔️ {{ mat }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step-by-Step Instructions -->
+                <div style="margin-bottom: 2.5rem;">
+                    <h3 style="font-size: 1.3rem; color: var(--dark); margin-bottom: 1.25rem;">
+                        📋 Step-by-Step Instructions
+                    </h3>
+
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        {% for step in tutorial.steps %}
+                            <div style="display: flex; gap: 1.25rem; align-items: flex-start; padding: 1.25rem; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 1.05rem;">
+                                    {{ step.step_number }}
+                                </div>
+                                <div>
+                                    <h4 style="color: var(--dark); font-size: 1.05rem; margin-bottom: 0.35rem;">{{ step.title }}</h4>
+                                    <p style="color: var(--gray-600); font-size: 0.95rem; line-height: 1.6;">{{ step.instruction }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Mandatory Stop Warning -->
+                <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 1.25rem; margin-bottom: 2.5rem;">
+                    <h4 style="color: #92400e; margin-bottom: 0.4rem; font-size: 1rem; display: flex; align-items: center; gap: 0.4rem;">
+                        🛑 Stop and Call a Professional If...
+                    </h4>
+                    <p style="color: #78350f; font-size: 0.95rem; line-height: 1.5;">
+                        {{ tutorial.stop_warning }}
+                    </p>
+                </div>
+
+                <!-- Video Help Section -->
+                <div style="margin-bottom: 2.5rem;">
+                    <h3 style="font-size: 1.2rem; color: var(--dark); margin-bottom: 1rem;">
+                        📺 Video Help & Video Guides
+                    </h3>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        {% for vid in tutorial.youtube_links %}
+                            <a href="{{ vid.url }}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1.25rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: var(--transition);">
+                                <span style="font-size: 1.2rem;">▶️</span>
+                                <span>{{ vid.title }}</span>
+                                <span style="margin-left: auto; font-size: 0.8rem; color: #dc2626;">Open on YouTube ↗</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- "Still not fixed? Find a worker" Button at end -->
+                <div style="background: #f8fafc; border-top: 1px solid var(--gray-200); padding: 1.75rem; text-align: center; border-radius: 8px;">
+                    <h4 style="color: var(--dark); margin-bottom: 0.4rem;">Still not fixed? Or want an expert to do it?</h4>
+                    <p style="color: var(--gray-600); font-size: 0.95rem; margin-bottom: 1.25rem;">
+                        Save time and avoid hassle. Our verified workers are ready to help with zero booking fees for subscribers.
+                    </p>
+                    <a href="{{ url_for('ai_search', q=query) }}" class="btn btn-primary" style="padding: 0.85rem 2rem; font-size: 1rem;">
+                        👨‍🔧 Still Not Fixed? Find a Worker
+                    </a>
+                </div>
+
+            </div>
+        {% endif %}
+    {% endif %}
+
+</div>
+
+<script>
+function setDiyQuery(text) {
+    document.getElementById('diyQueryInput').value = text;
+}
+
+document.getElementById('diyForm').addEventListener('submit', () => {
+    document.getElementById('diyLoadingBox').style.display = 'block';
+    const btn = document.getElementById('diySubmitBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Generating...';
+    }
+});
+</script>
+{% endblock %}

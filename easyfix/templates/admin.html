@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - FixWithEase{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1050px; margin: 1rem auto 3rem;">
+    
+    <!-- Admin Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: #e0e7ff; color: var(--primary); padding: 0.3rem 0.8rem; border-radius: 999px; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem;">
+                <span>⚙️ PLATFORM METRICS</span>
+            </div>
+            <h1 style="font-size: 2rem; color: var(--dark); margin: 0;">Admin Financial Dashboard</h1>
+            <p style="color: var(--gray-600); font-size: 0.95rem;">Monitor platform subscription revenue, 5% consulting fees, and order activity.</p>
+        </div>
+        <div>
+            <span style="background: #ecfdf5; color: #065f46; border: 1px solid #10b981; padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 600;">
+                Live Mode: SQLite DB
+            </span>
+        </div>
+    </div>
+
+    <!-- Revenue KPI Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+        
+        <!-- Total Platform Revenue -->
+        <div style="background: white; border: 2px solid var(--primary); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.85rem; color: var(--gray-600); font-weight: 600; text-transform: uppercase;">Total Revenue</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin: 0.35rem 0;">
+                ₹{{ "%.2f"|format(data.total_platform_revenue) }}
+            </div>
+            <div style="font-size: 0.8rem; color: var(--gray-600);">Subscriptions + 5% Fees</div>
+        </div>
+
+        <!-- Subscription Revenue -->
+        <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.85rem; color: var(--gray-600); font-weight: 600; text-transform: uppercase;">Subscription Revenue</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #059669; margin: 0.35rem 0;">
+                ₹{{ "%.2f"|format(data.subscription_revenue) }}
+            </div>
+            <div style="font-size: 0.8rem; color: var(--gray-600);">
+                {{ data.monthly_subs_count }} monthly (₹30) • {{ data.yearly_subs_count }} yearly (₹300)
+            </div>
+        </div>
+
+        <!-- 5% Consulting Fee Revenue -->
+        <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.85rem; color: var(--gray-600); font-weight: 600; text-transform: uppercase;">Consulting Fee (5%)</div>
+            <div style="font-size: 2rem; font-weight: 800; color: #d97706; margin: 0.35rem 0;">
+                ₹{{ "%.2f"|format(data.fee_revenue) }}
+            </div>
+            <div style="font-size: 0.8rem; color: var(--gray-600);">Collected from free user bookings</div>
+        </div>
+
+        <!-- Platform Operations -->
+        <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.85rem; color: var(--gray-600); font-weight: 600; text-transform: uppercase;">Orders & Users</div>
+            <div style="font-size: 2rem; font-weight: 800; color: var(--dark); margin: 0.35rem 0;">
+                {{ data.total_orders }}
+            </div>
+            <div style="font-size: 0.8rem; color: var(--gray-600);">
+                {{ data.customer_count }} Customers • {{ data.worker_count }} Workers
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.75rem; box-shadow: var(--shadow-sm); margin-bottom: 2.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3 style="font-size: 1.25rem; color: var(--dark); margin: 0;">Recent Orders & Fee Breakdown</h3>
+            <span style="font-size: 0.85rem; color: var(--gray-600);">Showing latest orders</span>
+        </div>
+
+        {% if data.recent_orders and data.recent_orders|length > 0 %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--gray-200); text-align: left; background: var(--gray-50);">
+                            <th style="padding: 0.75rem;">Order #</th>
+                            <th style="padding: 0.75rem;">Customer</th>
+                            <th style="padding: 0.75rem;">Worker</th>
+                            <th style="padding: 0.75rem;">Problem</th>
+                            <th style="padding: 0.75rem;">Base (₹)</th>
+                            <th style="padding: 0.75rem;">5% Fee (₹)</th>
+                            <th style="padding: 0.75rem;">Total (₹)</th>
+                            <th style="padding: 0.75rem;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in data.recent_orders %}
+                            <tr style="border-bottom: 1px solid var(--gray-100);">
+                                <td style="padding: 0.75rem; font-weight: 700;">#{{ o.id }}</td>
+                                <td style="padding: 0.75rem;">{{ o.customer_name }}</td>
+                                <td style="padding: 0.75rem;">{{ o.worker_name }}</td>
+                                <td style="padding: 0.75rem; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ o.problem_text }}">
+                                    {{ o.problem_text }}
+                                </td>
+                                <td style="padding: 0.75rem;">₹{{ "%.2f"|format(o.base_amount) }}</td>
+                                <td style="padding: 0.75rem;">
+                                    {% if o.fee_amount > 0 %}
+                                        <span style="color: var(--danger); font-weight: 600;">+₹{{ "%.2f"|format(o.fee_amount) }} (5%)</span>
+                                    {% else %}
+                                        <span style="color: #059669; font-weight: 600;">₹0.00 (Subscriber)</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 0.75rem; font-weight: 700;">
+                                    ₹{{ "%.2f"|format(o.base_amount + o.fee_amount) }}
+                                </td>
+                                <td style="padding: 0.75rem;">
+                                    <span style="font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; background: {% if o.status == 'completed' %}#ecfdf5; color: #065f46;{% else %}#fef3c7; color: #92400e;{% endif %}">
+                                        {{ o.status|capitalize }}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p style="color: var(--gray-600); text-align: center; padding: 2rem;">No orders placed yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Subscriptions Table -->
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.75rem; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h3 style="font-size: 1.25rem; color: var(--dark); margin: 0;">Subscription Records</h3>
+            <span style="font-size: 0.85rem; color: var(--gray-600);">Monthly (₹30) & Yearly (₹300)</span>
+        </div>
+
+        {% if data.recent_subscriptions and data.recent_subscriptions|length > 0 %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--gray-200); text-align: left; background: var(--gray-50);">
+                            <th style="padding: 0.75rem;">Sub ID</th>
+                            <th style="padding: 0.75rem;">Subscriber</th>
+                            <th style="padding: 0.75rem;">Email</th>
+                            <th style="padding: 0.75rem;">Plan</th>
+                            <th style="padding: 0.75rem;">Price</th>
+                            <th style="padding: 0.75rem;">Valid Until</th>
+                            <th style="padding: 0.75rem;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in data.recent_subscriptions %}
+                            <tr style="border-bottom: 1px solid var(--gray-100);">
+                                <td style="padding: 0.75rem; font-weight: 700;">#{{ s.id }}</td>
+                                <td style="padding: 0.75rem; font-weight: 600;">{{ s.user_name }}</td>
+                                <td style="padding: 0.75rem; color: var(--gray-600);">{{ s.user_email }}</td>
+                                <td style="padding: 0.75rem;">
+                                    <span style="font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 999px; background: {% if s.plan == 'yearly' %}#ecfdf5; color: #065f46;{% else %}#eff6ff; color: #1e40af;{% endif %}">
+                                        {{ s.plan|capitalize }}
+                                    </span>
+                                </td>
+                                <td style="padding: 0.75rem; font-weight: 600;">
+                                    {% if s.plan == 'yearly' %}₹300{% else %}₹30{% endif %}
+                                </td>
+                                <td style="padding: 0.75rem; color: var(--gray-600);">
+                                    {{ s.end_date[:10] }}
+                                </td>
+                                <td style="padding: 0.75rem;">
+                                    <span style="font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 600; background: #ecfdf5; color: #065f46;">
+                                        {{ s.status|capitalize }}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p style="color: var(--gray-600); text-align: center; padding: 2rem;">No subscriptions recorded yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

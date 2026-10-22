@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}FixWithEase - Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Connect with <span>Skilled Workers</span> Near You</h1>
+        <p>From leaking taps to home repairs, find verified local technicians or get AI-powered instant diagnosis.</p>
+
+        <!-- Simple Search Box -->
+        <form action="{{ url_for('workers') }}" method="GET" class="search-container">
+            <input 
+                type="text" 
+                name="q" 
+                class="search-input" 
+                placeholder="Search skills (e.g. plumber, electrician, carpenter)..."
+                required
+            >
+            <button type="submit" class="btn btn-primary search-btn">Search Workers</button>
+        </form>
+
+        <div style="margin-top: 1.25rem; font-size: 0.9rem; color: var(--gray-600);">
+            Popular: 
+            <a href="{{ url_for('workers', q='Plumber') }}" style="color: var(--primary); margin: 0 0.35rem;">Plumber</a> •
+            <a href="{{ url_for('workers', q='Electrician') }}" style="color: var(--primary); margin: 0 0.35rem;">Electrician</a> •
+            <a href="{{ url_for('workers', q='Carpenter') }}" style="color: var(--primary); margin: 0 0.35rem;">Carpenter</a> •
+            <a href="{{ url_for('workers', q='Painter') }}" style="color: var(--primary); margin: 0 0.35rem;">Painter</a>
+        </div>
+    </section>
+
+    <!-- Feature Highlights -->
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3>Free Directory Search</h3>
+            <p>Browse local plumbers, electricians, carpenters and painters. Filter by skills and city at your convenience.</p>
+            <a href="{{ url_for('workers') }}" class="btn btn-outline" style="font-size: 0.85rem;">Browse Workers &rarr;</a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>AI Matchmaker</h3>
+            <p>Describe your issue in everyday words. Our Gemini AI analyzes urgency, safety, and selects the ideal nearby workers.</p>
+            <span style="display:inline-block; font-size: 0.8rem; background: #fef3c7; color: #92400e; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600;">Subscribers Only</span>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🛠️</div>
+            <h3>Fix It Yourself</h3>
+            <p>Step-by-step DIY guidance for safe home fixes with video tutorials. Built-in safety filter blocks risky electrical or gas jobs.</p>
+            <a href="{{ url_for('fix') }}" class="btn btn-outline" style="font-size: 0.85rem;">Learn More &rarr;</a>
+        </div>
+    </div>
+
+    <!-- Pricing Banner -->
+    <section class="pricing-banner">
+        <div>
+            <h2>Upgrade to Premium for ₹30/month</h2>
+            <p>Get AI-powered search, DIY step-by-step tutorials, and save 5% consulting fees on every worker booking.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('pricing') }}" class="btn btn-secondary" style="font-size: 1.05rem; padding: 0.85rem 1.75rem;">View Pricing Plans</a>
+        </div>
+    </section>
+</div>
+{% endblock %}

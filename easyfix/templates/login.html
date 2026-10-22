@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Login - FixWithEase{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 480px; margin: 2rem auto;">
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 2.25rem; box-shadow: var(--shadow);">
+        <h2 style="margin-bottom: 0.5rem; text-align: center; color: var(--dark);">Welcome Back</h2>
+        <p style="color: var(--gray-600); text-align: center; margin-bottom: 1.75rem; font-size: 0.95rem;">Log in to access your account and bookings.</p>
+
+        <form action="{{ url_for('login') }}" method="POST">
+            <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem;">Email Address</label>
+                <input 
+                    type="email" 
+                    name="email" 
+                    id="emailInput" 
+                    placeholder="you@example.com"
+                    required 
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 1rem;"
+                >
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem;">Password</label>
+                <input 
+                    type="password" 
+                    name="password" 
+                    id="passwordInput" 
+                    placeholder="Enter password"
+                    required 
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-400); border-radius: 6px; font-size: 1rem;"
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="padding: 0.85rem; font-size: 1rem;">Log In</button>
+        </form>
+
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--gray-600);">
+            Don't have an account? <a href="{{ url_for('register') }}" style="color: var(--primary); font-weight: 600;">Register here</a>
+        </div>
+
+        <hr style="margin: 2rem 0 1.5rem; border: 0; border-top: 1px solid var(--gray-200);">
+
+        <!-- Quick Demo Fill Buttons for Testing -->
+        <div style="background: var(--gray-100); border-radius: 8px; padding: 1rem;">
+            <p style="font-size: 0.85rem; font-weight: 600; color: var(--gray-600); margin-bottom: 0.75rem; text-align: center;">
+                ⚡ Quick Demo Login (One-Click)
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.45rem;" onclick="fillDemo('customer.sub@example.com', 'Password123!')">
+                    Login as Subscribed User (Kavitha)
+                </button>
+                <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.45rem;" onclick="fillDemo('customer.free@example.com', 'Password123!')">
+                    Login as Free User (Arun)
+                </button>
+                <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.45rem;" onclick="fillDemo('murugan.plumber@example.com', 'Password123!')">
+                    Login as Worker (Murugan - Plumber)
+                </button>
+                <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.45rem; border-color: #7c3aed; color: #7c3aed;" onclick="fillDemo('admin@example.com', 'Password123!')">
+                    ⚙️ Login as Admin (Manager)
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function fillDemo(email, password) {
+    document.getElementById('emailInput').value = email;
+    document.getElementById('passwordInput').value = password;
+}
+</script>
+{% endblock %}

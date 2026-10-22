@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}AI Problem Matcher - FixWithEase{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 1rem auto 3rem;">
+    
+    <!-- Hero Header -->
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+        <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: #eff6ff; color: var(--primary); padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem;">
+            <span>🤖 AI-POWERED MATCHMAKER</span>
+            <span style="background: var(--primary); color: white; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.7rem;">PRO</span>
+        </div>
+        <h1 style="font-size: 2.2rem; color: var(--dark); margin-bottom: 0.5rem;">Describe Your Problem in Plain Words</h1>
+        <p style="color: var(--gray-600); max-width: 600px; margin: 0 auto; font-size: 1.05rem;">
+            Our Gemini AI understands the root problem, assesses urgency and safety, and scores local technicians based on proximity and skill match.
+        </p>
+    </div>
+
+    <!-- AI Search Form -->
+    <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); margin-bottom: 2.5rem;">
+        <form action="{{ url_for('ai_search') }}" method="GET" id="aiSearchForm">
+            <!-- Hidden coordinates -->
+            <input type="hidden" name="lat" id="aiLat" value="{{ user_lat or '' }}">
+            <input type="hidden" name="lng" id="aiLng" value="{{ user_lng or '' }}">
+
+            <div style="position: relative; margin-bottom: 1rem;">
+                <textarea 
+                    name="q" 
+                    id="problemInput"
+                    rows="3" 
+                    required 
+                    placeholder="Type what is broken or what you need fixed (e.g. 'my kitchen tap is leaking', 'fan not working', 'need a table repaired')..."
+                    style="width: 100%; padding: 1rem; border: 2px solid var(--primary); border-radius: 10px; font-size: 1.05rem; font-family: inherit; outline: none; box-sizing: border-box;"
+                >{{ query or '' }}</textarea>
+            </div>
+
+            <!-- Example chips -->
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                <span style="color: var(--gray-600); font-weight: 600;">Try these:</span>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.3rem 0.65rem;" onclick="setQuery('my kitchen tap is leaking')">
+                    💧 "my kitchen tap is leaking"
+                </button>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.3rem 0.65rem;" onclick="setQuery('fan not working')">
+                    ⚡ "fan not working"
+                </button>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.3rem 0.65rem;" onclick="setQuery('need a table repaired')">
+                    🪑 "need a table repaired"
+                </button>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <button type="submit" class="btn btn-primary" id="aiSubmitBtn" style="padding: 0.85rem 2rem; font-size: 1.05rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <span>✨ Find Best Matching Workers</span>
+                </button>
+                <span style="font-size: 0.85rem; color: var(--gray-600);">📍 Accurate distances using Chennai geolocation</span>
+            </div>
+
+            <!-- Loading State Indicator -->
+            <div id="aiLoadingBox" class="loading-box">
+                <span class="spinner spinner-blue"></span>
+                <span style="margin-left: 0.75rem; font-weight: 600; color: var(--primary);">Analyzing problem with Gemini AI & scoring nearby technicians...</span>
+            </div>
+        </form>
+    </div>
+
+    <!-- AI Results Section -->
+    {% if query and analysis %}
+        <!-- AI Diagnosis Banner -->
+        <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.75rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+            <h3 style="font-size: 1.25rem; color: var(--dark); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>🧠 AI Problem Diagnosis</span>
+            </h3>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                <div style="background: var(--gray-50); padding: 0.85rem; border-radius: 8px;">
+                    <span style="font-size: 0.8rem; color: var(--gray-600); font-weight: 600; display: block; text-transform: uppercase;">Required Skill</span>
+                    <strong style="color: var(--primary); font-size: 1.1rem;">{{ analysis.skill_needed }}</strong>
+                </div>
+
+                <div style="background: var(--gray-50); padding: 0.85rem; border-radius: 8px;">
+                    <span style="font-size: 0.8rem; color: var(--gray-600); font-weight: 600; display: block; text-transform: uppercase;">Urgency Level</span>
+                    {% if analysis.urgency == 'high' %}
+                        <strong style="color: var(--danger); font-size: 1.1rem;">🔴 High Urgency</strong>
+                    {% elif analysis.urgency == 'medium' %}
+                        <strong style="color: #d97706; font-size: 1.1rem;">🟠 Medium</strong>
+                    {% else %}
+                        <strong style="color: #059669; font-size: 1.1rem;">🟢 Low</strong>
+                    {% endif %}
+                </div>
+
+                <div style="background: var(--gray-50); padding: 0.85rem; border-radius: 8px;">
+                    <span style="font-size: 0.8rem; color: var(--gray-600); font-weight: 600; display: block; text-transform: uppercase;">Safety Status</span>
+                    {% if analysis.is_risky %}
+                        <strong style="color: var(--danger); font-size: 1.1rem;">⚠️ High Risk (Pro Required)</strong>
+                    {% else %}
+                        <strong style="color: #059669; font-size: 1.1rem;">✔️ Standard Task</strong>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="color: var(--gray-800); font-size: 0.95rem; padding: 0.75rem; background: #f8fafc; border-left: 3px solid var(--primary); border-radius: 4px;">
+                <strong>Summary:</strong> {{ analysis.summary }}
+            </div>
+
+            {% if analysis.is_risky %}
+                <div style="margin-top: 1rem; padding: 0.85rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; color: #991b1b; font-size: 0.95rem;">
+                    <strong>⚠️ Caution:</strong> This problem involves electrical wiring, switchboards, gas lines, or hazardous equipment. We recommend booking one of the verified professionals below instead of attempting DIY repairs.
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Top 5 Ranked Workers -->
+        <div style="margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.4rem; color: var(--dark); margin-bottom: 0.25rem;">
+                🏆 Top 5 Ranked Workers for Your Problem
+            </h2>
+            <p style="color: var(--gray-600); font-size: 0.95rem;">
+                Ranked by AI skill relevance (highest weight), proximity, average rating, availability, and past jobs.
+            </p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            {% for worker in ranked_workers %}
+                <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
+                    
+                    <div style="display: flex; gap: 1.25rem; align-items: center;">
+                        <!-- Rank Badge -->
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: {% if loop.index == 1 %}#fef3c7{% elif loop.index == 2 %}#e0e7ff{% else %}var(--gray-100){% endif %}; color: {% if loop.index == 1 %}#92400e{% elif loop.index == 2 %}var(--primary){% else %}var(--gray-600){% endif %}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; flex-shrink: 0;">
+                            #{{ loop.index }}
+                        </div>
+
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+                                <h3 style="font-size: 1.2rem; color: var(--dark); margin: 0;">{{ worker.name }}</h3>
+                                {% if worker.verified %}
+                                    <span title="Verified Professional" style="display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: #3b82f6; color: white; font-size: 11px;">✓</span>
+                                {% endif %}
+                                <span style="background: #ecfdf5; color: #065f46; font-size: 0.75rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 999px;">
+                                    {{ "%.0f"|format(worker.match_score) }}% Match
+                                </span>
+                            </div>
+
+                            <!-- AI Recommendation Reason -->
+                            <div style="font-size: 0.9rem; color: var(--primary); font-weight: 600; margin-bottom: 0.35rem;">
+                                💡 {{ worker.recommendation_reason }}
+                            </div>
+
+                            <div style="font-size: 0.85rem; color: var(--gray-600);">
+                                📍 {{ worker.city }} • ⏳ {{ worker.experience_years }} yrs experience • ⭐ {{ "%.1f"|format(worker.rating_avg) }} rating
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Book Action -->
+                    <div>
+                        <a href="{{ url_for('book_worker', worker_id=worker.user_id) }}" class="btn btn-primary" style="padding: 0.65rem 1.5rem; white-space: nowrap;">
+                            Book This Worker
+                        </a>
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+function setQuery(text) {
+    document.getElementById('problemInput').value = text;
+}
+
+document.getElementById('aiSearchForm').addEventListener('submit', () => {
+    document.getElementById('aiLoadingBox').style.display = 'block';
+    const btn = document.getElementById('aiSubmitBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Diagnosing...';
+    }
+});
+</script>
+{% endblock %}
